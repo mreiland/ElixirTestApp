@@ -1,0 +1,32 @@
+Using .net 6
+It's assumed all files will sit in the same directory as the executable.  This solution is setup to copy questions.txt
+to the output directory.
+
+There was no given input file format for the questions so I assumed 1 question/line.  My concern was how much effort
+would be required if my chosen file format was not correct.  I would have preferred using a json file but that would
+have been more work on your part if that was unexpected.
+
+The DB file is just a json file that records a dictionary of name/answer list.
+
+The description states "out of 10 questions", but I'm not doing any checks to ensure this.  You can have 10 or 100
+questions.  If you give it less than 3 questions it will be impossible to ever successfully store answers but I've
+chosen not to worry about this use case.
+
+The problem as given is basically a FSM.  I've chosen to model this as follows:
+  - Each node chooses the next node to run.
+  - Central switch that does the actual command dispatch.  This doesn't scale but we only have 3 nodes types.
+  - The Store node doesn't save the data explicitly.  I didn't want to hardcode behavior that's specific to the DAL
+    implementation.  In theory you could put a DB behind the DAL.  Doing so would require updating the node and I
+    would prefer not doing so.  There's also an argument to be made that the Store node is more testable this way.
+
+I don't have a strong reason for the difference in how question loading and DAL loading works. In my head DAL is
+trying to be a more complete abstraction whereas the question loading is not so the DAL loading happens in the DAL class
+whereas the question loading is just a simple function call.
+
+In theory Program.cs could be broken up into smaller pieces since there are roughly 4 distinct things it's doing
+(console interaction, FSM execution, path configuration, and question loading) but I've chosen not to do so.  The file
+is still relatively small and having everything in a single file is convenient.
+
+I could have implemented this in a more OOP way where each node is its own class that inherits from an interface and
+let the .net runtime do the actual dispatch.  I chose not to because the implementations are simple enough that you
+don't gain anything by having them in separate files and you lose locality of reference.
