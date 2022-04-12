@@ -54,7 +54,10 @@ List<Question> LoadQuestionsFileOrThrow(string filepath)
     if (!File.Exists(filepath))
         throw new Exception($"The file {filepath} does not exist");
     var idx = 0;
-    return File.ReadAllLines(filepath).Select(l=>new Question(questionId: idx++, questionText: l.Trim())).ToList();
+    return File.ReadAllLines(filepath)
+        .Where(l=>!string.IsNullOrWhiteSpace(l)) // avoid empty lines
+        .Select(l=>new Question(questionId: idx++, questionText: l.Trim()))
+        .ToList();
 }
 
 (string Name, NextAction NextAction) FLOW_PromptForName(DAL dal)
