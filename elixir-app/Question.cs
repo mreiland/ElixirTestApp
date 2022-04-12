@@ -12,7 +12,7 @@ public class Question
     {
         this.QuestionId = questionId;
         if (string.IsNullOrWhiteSpace(questionText))
-            throw new ArgumentException("question cannot be null or whitespace.", nameof(questionText));
+            throw new ArgumentException("question text cannot be null or whitespace.", nameof(questionText));
         this.QuestionText = questionText;
     }
 }

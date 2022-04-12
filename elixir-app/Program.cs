@@ -59,19 +59,19 @@ List<Question> LoadQuestionsFileOrThrow(string filepath)
 
 (string Name, NextAction NextAction) FLOW_PromptForName(DAL dal)
 {
-    var nameResp = promptForString("Hi, what is your name?");
+    var nameResp = PromptForString("Hi, what is your name?");
     if (!nameResp.HasInput)
     {
         DisplayMessage("Sorry, we could not get your name.");
         return ("", NextAction.Shutdown);
     }
 
-    var name = nameResp.Input;
+    var name = nameResp.Input.Trim();
     var answers = dal.GetUserAnswers(name);
     if (!answers.Any())
         return (name, NextAction.Store);
 
-    var securityResp = promptForYN("Do you want to answer a security question?");
+    var securityResp = PromptForYN("Do you want to answer a security question?");
     if (!securityResp.HasInput)
     {
         DisplayMessage("Sorry, your input wasn't understood.");
@@ -85,7 +85,7 @@ List<Question> LoadQuestionsFileOrThrow(string filepath)
 
 NextAction FLOW_Store(string name, List<Question> questions, DAL dal)
 {
-    var resp = promptForYN("Would you like to store answers to security questions?");
+    var resp = PromptForYN("Would you like to store answers to security questions?");
     if (!resp.HasInput)
     {
         DisplayMessage("Sorry, your input wasn't understood.");
@@ -104,7 +104,7 @@ NextAction FLOW_Store(string name, List<Question> questions, DAL dal)
         answers.Clear();
         foreach (var q in questions)
         {
-            var tup = promptForString(q.QuestionText, repeatOnEmpty: false);
+            var tup = PromptForString(q.QuestionText, repeatOnEmpty: false);
             if (!tup.HasInput || string.IsNullOrWhiteSpace(tup.Input))
                 continue;
             answers.Add(new Answer(q.QuestionId, tup.Input));
@@ -133,10 +133,10 @@ NextAction FLOW_Answer(string name, List<Question> questions, DAL dal)
         if (!questionsById.ContainsKey(answer.QuestionId))
             continue;
         var question = questionsById[answer.QuestionId];
-        var tup = promptForString(question.QuestionText, repeatOnEmpty: false);
+        var tup = PromptForString(question.QuestionText, repeatOnEmpty: false);
         if(!tup.HasInput)
             continue;
-        if (tup.Input.Equals(answer.AnswerText, StringComparison.OrdinalIgnoreCase))
+        if (tup.Input.Trim().Equals(answer.AnswerText, StringComparison.OrdinalIgnoreCase))
         {
             DisplayMessage("That answer is correct!");
             return NextAction.PromptForName;
@@ -166,7 +166,7 @@ string GetExePath()
     return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "";
 }
 
-(string? Input, bool HasInput) promptForString(string displayMessage, bool repeatOnEmpty = true)
+(string? Input, bool HasInput) PromptForString(string displayMessage, bool repeatOnEmpty = true)
 {
     var input = "";
     var maxTries = 10;
@@ -184,7 +184,7 @@ string GetExePath()
     return (Input: "", HasInput: false);
 }
 
-(string? Input, bool HasInput, bool IsYes, bool IsNo) promptForYN(string displayMessage, bool repeatOnEmpty = true)
+(string? Input, bool HasInput, bool IsYes, bool IsNo) PromptForYN(string displayMessage, bool repeatOnEmpty = true)
 {
     var input = "";
     var maxTries = 10;
